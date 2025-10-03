@@ -37,6 +37,12 @@ export default {
         h += `<div style="overflow: hidden; display: flex; margin-bottom: 20px; flex-direction: column; align-items: center;">`;
             h += `<div class="profile-picture change-profile-picture" style="background-image: url('${html_encode(window.user?.profile?.picture ?? window.icons['profile.svg'])}');">`;
             h += `</div>`;
+            h += `<div style="margin-top: 10px; display: flex; gap: 10px;">`;
+                h += `<button class="button change-profile-picture-btn">${i18n('change_profile_picture') || 'Change'}</button>`;
+                if(window.user?.profile?.picture){
+                    h += `<button class="button button-danger remove-profile-picture">${i18n('remove_profile_picture') || 'Remove'}</button>`;
+                }
+            h += `</div>`;
         h += `</div>`;
 
         // change password button
@@ -134,7 +140,7 @@ export default {
             });
         });
 
-        $el_window.find('.change-profile-picture').on('click', async function (e) {
+        $el_window.find('.change-profile-picture, .change-profile-picture-btn').on('click', async function (e) {
             // open dialog
             UIWindow({
                 path: '/' + window.user.username + '/Desktop',
@@ -147,7 +153,23 @@ export default {
                 is_dir: true,
                 is_openFileDialog: true,
                 selectable_body: false,
-            });    
+            });
+        })
+
+        $el_window.find('.remove-profile-picture').on('click', async function (e) {
+            // Remove profile picture by setting it to null/undefined
+            const defaultIcon = window.icons['profile.svg'];
+
+            // Update UI
+            $el_window.find('.profile-picture').css('background-image', 'url(' + html_encode(defaultIcon) + ')');
+            $('.profile-image').css('background-image', 'url(' + html_encode(defaultIcon) + ')');
+            $('.profile-image').removeClass('profile-image-has-picture');
+
+            // Update profile to remove picture
+            update_profile(window.user.username, {picture: null});
+
+            // Hide the remove button since there's no picture anymore
+            $(this).hide();
         })
 
         $el_window.on('file_opened', async function(e){
@@ -174,6 +196,24 @@ export default {
                     $('.profile-image').addClass('profile-image-has-picture');
                     // update profile picture
                     update_profile(window.user.username, {picture: base64data})
+
+                    // Show remove button if it doesn't exist, or make it visible if it does
+                    if($el_window.find('.remove-profile-picture').length === 0){
+                        const removeBtn = `<button class="button button-danger remove-profile-picture">${i18n('remove_profile_picture') || 'Remove'}</button>`;
+                        $el_window.find('.change-profile-picture-btn').parent().append(removeBtn);
+
+                        // Attach click handler to the new button
+                        $el_window.find('.remove-profile-picture').on('click', async function (e) {
+                            const defaultIcon = window.icons['profile.svg'];
+                            $el_window.find('.profile-picture').css('background-image', 'url(' + html_encode(defaultIcon) + ')');
+                            $('.profile-image').css('background-image', 'url(' + html_encode(defaultIcon) + ')');
+                            $('.profile-image').removeClass('profile-image-has-picture');
+                            update_profile(window.user.username, {picture: null});
+                            $(this).hide();
+                        })
+                    } else {
+                        $el_window.find('.remove-profile-picture').show();
+                    }
                 }
             }
         })
