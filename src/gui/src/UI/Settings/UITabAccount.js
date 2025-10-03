@@ -23,6 +23,7 @@ import UIWindowChangeUsername from '../UIWindowChangeUsername.js';
 import UIWindowConfirmUserDeletion from './UIWindowConfirmUserDeletion.js';
 import UIWindowManageSessions from '../UIWindowManageSessions.js';
 import UIWindow from '../UIWindow.js';
+import UIAlert from '../UIAlert.js';
 
 // About
 export default {
@@ -157,19 +158,67 @@ export default {
         })
 
         $el_window.find('.remove-profile-picture').on('click', async function (e) {
-            // Remove profile picture by setting it to null/undefined
-            const defaultIcon = window.icons['profile.svg'];
+            // Show confirmation dialog
+            const confirmed = await UIAlert({
+                message: i18n('confirm_remove_profile_picture') || 'Are you sure you want to remove your profile picture?',
+                buttons: [
+                    {
+                        label: i18n('cancel') || 'Cancel',
+                        value: false,
+                        type: 'default'
+                    },
+                    {
+                        label: i18n('remove') || 'Remove',
+                        value: true,
+                        type: 'primary'
+                    }
+                ],
+                parent_uuid: $el_window.attr('data-element_uuid')
+            });
 
-            // Update UI
-            $el_window.find('.profile-picture').css('background-image', 'url(' + html_encode(defaultIcon) + ')');
-            $('.profile-image').css('background-image', 'url(' + html_encode(defaultIcon) + ')');
-            $('.profile-image').removeClass('profile-image-has-picture');
+            if (!confirmed || confirmed === 'false') {
+                return;
+            }
 
-            // Update profile to remove picture
-            update_profile(window.user.username, {picture: null});
+            const $removeBtn = $(this);
+            const originalText = $removeBtn.text();
 
-            // Hide the remove button since there's no picture anymore
-            $(this).hide();
+            try {
+                // Show loading state
+                $removeBtn.prop('disabled', true).text(i18n('removing') || 'Removing...');
+
+                const defaultIcon = window.icons['profile.svg'];
+
+                // Update UI
+                $el_window.find('.profile-picture').css('background-image', 'url(' + html_encode(defaultIcon) + ')');
+                $('.profile-image').css('background-image', 'url(' + html_encode(defaultIcon) + ')');
+                $('.profile-image').removeClass('profile-image-has-picture');
+
+                // Update profile to remove picture
+                await update_profile(window.user.username, {picture: null});
+
+                // Hide the remove button since there's no picture anymore
+                $removeBtn.hide();
+
+                // Show success message
+                await UIAlert({
+                    message: i18n('profile_picture_removed') || 'Profile picture removed successfully.',
+                    type: 'success',
+                    parent_uuid: $el_window.attr('data-element_uuid')
+                });
+
+            } catch (error) {
+                // Restore button state on error
+                $removeBtn.prop('disabled', false).text(originalText);
+
+                // Show error message
+                await UIAlert({
+                    message: i18n('error_removing_profile_picture') || 'An error occurred while removing your profile picture. Please try again.',
+                    parent_uuid: $el_window.attr('data-element_uuid')
+                });
+
+                console.error('Error removing profile picture:', error);
+            }
         })
 
         $el_window.on('file_opened', async function(e){
@@ -204,12 +253,67 @@ export default {
 
                         // Attach click handler to the new button
                         $el_window.find('.remove-profile-picture').on('click', async function (e) {
-                            const defaultIcon = window.icons['profile.svg'];
-                            $el_window.find('.profile-picture').css('background-image', 'url(' + html_encode(defaultIcon) + ')');
-                            $('.profile-image').css('background-image', 'url(' + html_encode(defaultIcon) + ')');
-                            $('.profile-image').removeClass('profile-image-has-picture');
-                            update_profile(window.user.username, {picture: null});
-                            $(this).hide();
+                            // Show confirmation dialog
+                            const confirmed = await UIAlert({
+                                message: i18n('confirm_remove_profile_picture') || 'Are you sure you want to remove your profile picture?',
+                                buttons: [
+                                    {
+                                        label: i18n('cancel') || 'Cancel',
+                                        value: false,
+                                        type: 'default'
+                                    },
+                                    {
+                                        label: i18n('remove') || 'Remove',
+                                        value: true,
+                                        type: 'primary'
+                                    }
+                                ],
+                                parent_uuid: $el_window.attr('data-element_uuid')
+                            });
+
+                            if (!confirmed || confirmed === 'false') {
+                                return;
+                            }
+
+                            const $removeBtn = $(this);
+                            const originalText = $removeBtn.text();
+
+                            try {
+                                // Show loading state
+                                $removeBtn.prop('disabled', true).text(i18n('removing') || 'Removing...');
+
+                                const defaultIcon = window.icons['profile.svg'];
+
+                                // Update UI
+                                $el_window.find('.profile-picture').css('background-image', 'url(' + html_encode(defaultIcon) + ')');
+                                $('.profile-image').css('background-image', 'url(' + html_encode(defaultIcon) + ')');
+                                $('.profile-image').removeClass('profile-image-has-picture');
+
+                                // Update profile to remove picture
+                                await update_profile(window.user.username, {picture: null});
+
+                                // Hide the remove button since there's no picture anymore
+                                $removeBtn.hide();
+
+                                // Show success message
+                                await UIAlert({
+                                    message: i18n('profile_picture_removed') || 'Profile picture removed successfully.',
+                                    type: 'success',
+                                    parent_uuid: $el_window.attr('data-element_uuid')
+                                });
+
+                            } catch (error) {
+                                // Restore button state on error
+                                $removeBtn.prop('disabled', false).text(originalText);
+
+                                // Show error message
+                                await UIAlert({
+                                    message: i18n('error_removing_profile_picture') || 'An error occurred while removing your profile picture. Please try again.',
+                                    parent_uuid: $el_window.attr('data-element_uuid')
+                                });
+
+                                console.error('Error removing profile picture:', error);
+                            }
                         })
                     } else {
                         $el_window.find('.remove-profile-picture').show();
