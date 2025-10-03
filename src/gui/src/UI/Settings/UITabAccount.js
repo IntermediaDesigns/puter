@@ -39,9 +39,9 @@ export default {
             h += `<div class="profile-picture change-profile-picture" style="background-image: url('${html_encode(window.user?.profile?.picture ?? window.icons['profile.svg'])}');">`;
             h += `</div>`;
             h += `<div style="margin-top: 10px; display: flex; gap: 10px;">`;
-                h += `<button class="button change-profile-picture-btn">${i18n('change_profile_picture') || 'Change'}</button>`;
+                h += `<button class="button change-profile-picture-btn" aria-label="${i18n('change_profile_picture') || 'Change profile picture'}">${i18n('change_profile_picture') || 'Change'}</button>`;
                 if(window.user?.profile?.picture){
-                    h += `<button class="button button-danger remove-profile-picture">${i18n('remove_profile_picture') || 'Remove'}</button>`;
+                    h += `<button class="button button-danger remove-profile-picture" aria-label="${i18n('remove_profile_picture') || 'Remove profile picture'}">${i18n('remove_profile_picture') || 'Remove'}</button>`;
                 }
             h += `</div>`;
         h += `</div>`;
@@ -248,7 +248,7 @@ export default {
 
                     // Show remove button if it doesn't exist, or make it visible if it does
                     if($el_window.find('.remove-profile-picture').length === 0){
-                        const removeBtn = `<button class="button button-danger remove-profile-picture">${i18n('remove_profile_picture') || 'Remove'}</button>`;
+                        const removeBtn = `<button class="button button-danger remove-profile-picture" aria-label="${i18n('remove_profile_picture') || 'Remove profile picture'}">${i18n('remove_profile_picture') || 'Remove'}</button>`;
                         $el_window.find('.change-profile-picture-btn').parent().append(removeBtn);
 
                         // Attach click handler to the new button
