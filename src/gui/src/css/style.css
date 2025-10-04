@@ -76,6 +76,7 @@
     "Inter", "Helvetica Neue", HelveticaNeue, Helvetica, Arial, sans-serif;
   -webkit-user-select: none;
   -webkit-user-select: none;
+  -webkit-user-select: none;
   user-select: none;
   font-optical-sizing: auto;
   font-style: normal;
@@ -132,11 +133,7 @@ pre {
   );
 }
 
-html,
-body {
-  /* disables two fingers back/forward swipe */
-  /* overscroll-behavior-x: none; */ /* Not supported on iOS < 16 */
-}
+/* Removed empty html, body ruleset that only contained commented code */
 
 /* Only apply overscroll-behavior where supported */
 @supports (overscroll-behavior: none) {
@@ -1090,8 +1087,8 @@ span.header-sort-icon img {
   -webkit-user-select: none !important;
   -moz-user-select: none !important;
   -ms-user-select: none !important;
-  cursor: default;
   user-select: none !important;
+  cursor: default;
 }
 
 .window-active .window-head {
