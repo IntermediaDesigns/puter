@@ -101,6 +101,11 @@ pre {
     --window-sidebar-lightness: var(--primary-lightness);
     --window-sidebar-alpha: calc(min(1, 0.11 + var(--primary-alpha)));
     --window-sidebar-color: var(--primary-color);
+    --window-sidebar-title-color: var(--primary-color);
+    --window-sidebar-title-shadow: 1px 1px rgb(247 247 247 / 15%);
+    --window-sidebar-item-color: #444444;
+    --window-sidebar-item-hover-bg: rgba(243, 243, 243, 0.8);
+    --window-sidebar-item-active-bg: #fefeff;
 
     --taskbar-hue: var(--primary-hue);
     --taskbar-saturation: var(--primary-saturation);
@@ -1218,8 +1223,8 @@ span.header-sort-icon img {
     margin: 0;
     font-weight: bold;
     font-size: 13px;
-    color: #8f96a3;
-    text-shadow: 1px 1px rgb(247 247 247 / 15%);
+    color: var(--window-sidebar-title-color, #8f96a3);
+    text-shadow: var(--window-sidebar-title-shadow, 1px 1px rgb(247 247 247 / 15%));
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     padding-left: 6px;
@@ -1234,7 +1239,7 @@ span.header-sort-icon img {
 }
 
 .window-sidebar-item:hover, .window-sidebar-item.has-open-contextmenu {
-    background-color: rgba(243, 243, 243, 0.8);
+    background-color: var(--window-sidebar-item-hover-bg, rgba(243, 243, 243, 0.8));
     cursor: pointer;
 }
 
@@ -1243,7 +1248,7 @@ span.header-sort-icon img {
     margin-top: 2px;
     padding: 4px;
     border-radius: 3px;
-    color: #444444;
+    color: var(--window-sidebar-item-color, #444444);
     font-size: 13px;
     cursor: pointer;
     transition: 0.15s background-color;
@@ -1255,7 +1260,7 @@ span.header-sort-icon img {
 }
 
 .window-sidebar-item-active, .window-sidebar-item-drag-active, .window-sidebar-item-active:hover {
-    background-color: #fefeff;
+    background-color: var(--window-sidebar-item-active-bg, #fefeff);
 }
 
 .window-sidebar-item-placeholder {
