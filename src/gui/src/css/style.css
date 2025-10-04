@@ -106,12 +106,17 @@ pre {
     --window-sidebar-item-color: #444444;
     --window-sidebar-item-hover-bg: rgba(243, 243, 243, 0.8);
     --window-sidebar-item-active-bg: #fefeff;
+    --window-action-btn-filter: none;
+    --window-navbar-text-color: #41484c;
+    --window-navbar-text-color-hover: #414a4e;
 
     --taskbar-hue: var(--primary-hue);
     --taskbar-saturation: var(--primary-saturation);
     --taskbar-lightness: var(--primary-lightness);
     --taskbar-alpha: calc(0.73 * var(--primary-alpha));
     --taskbar-color: var(--primary-color);
+
+    --toolbar-text-color: white;
 
     --select-hue: 213.05;
     --select-saturation: 74.22%;
@@ -830,7 +835,7 @@ span.header-sort-icon img {
 
 .window-menubar-global {
     background-color: transparent;
-    color: white;
+    color: var(--toolbar-text-color, white);
     border-bottom: none;
     flex-grow: 1;
     scale: 1;
@@ -1044,6 +1049,7 @@ span.header-sort-icon img {
     border-radius: 100%;
     padding: 3px;
     transition: background-color 0.2s ease-in;
+    filter: var(--window-action-btn-filter, none);
 }
 
 .window-navbar-btn:hover, .window-navbar-btn.has-open-contextmenu {
@@ -1060,7 +1066,7 @@ span.header-sort-icon img {
     line-height: 35px;
     padding-left: 10px;
     font-size: 14px;
-    color: #41484c;
+    color: var(--window-navbar-text-color, #41484c);
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
@@ -1132,7 +1138,7 @@ span.header-sort-icon img {
 }
 
 .window-navbar-path-dirname:hover {
-    color: #414a4e;
+    color: var(--window-navbar-text-color-hover, #414a4e);
     text-decoration: underline;
 }
 
@@ -1408,6 +1414,7 @@ span.header-sort-icon img {
     -moz-user-select: none;
     -webkit-user-select: none;
     -ms-user-select: none;
+    filter: var(--window-action-btn-filter, none);
 }
 
 .window-action-btn:hover>img {
@@ -1757,7 +1764,7 @@ label {
 }
 
 .show-desktop-btn {
-    color: white;
+    color: var(--toolbar-text-color, white);
     font-size: 11px !important;
     padding: 2px 5px 2px !important;
     border: 1px solid;
@@ -1814,7 +1821,7 @@ label {
 }
 
 .user-options-menu-username {
-    color: black;
+    color: var(--toolbar-text-color, white);
     margin-left: 5px;
     display: block;
     max-width: 70px;

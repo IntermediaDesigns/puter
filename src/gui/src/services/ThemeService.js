@@ -117,24 +117,28 @@ export class ThemeService extends Service {
     calculateSidebarTitleColor_(lightness, lightText) {
         // If light text mode is enabled, return white for dark backgrounds
         if (lightText) {
-            return 'rgba(255, 255, 255, 0.9)';
+            return 'rgba(255, 255, 255, 0.95)';
         }
 
-        // For very light backgrounds (>85%), use darker text for better contrast
-        if (lightness > 85) {
-            return '#5a6169';
+        // For very dark backgrounds (<30%), always use light text
+        if (lightness < 30) {
+            return 'rgba(255, 255, 255, 0.9)';
         }
-        // For medium-light backgrounds (70-85%), use medium-dark text
-        else if (lightness > 70) {
-            return '#6d7580';
+        // For dark backgrounds (30-50%), use lighter text
+        else if (lightness < 50) {
+            return 'rgba(255, 255, 255, 0.85)';
         }
-        // For medium backgrounds (50-70%), use darker text
-        else if (lightness > 50) {
+        // For medium backgrounds (50-70%), use medium text
+        else if (lightness < 70) {
             return '#8f96a3';
         }
-        // For darker backgrounds (<50%), use lighter text
+        // For light backgrounds (70-85%), use medium-dark text
+        else if (lightness < 85) {
+            return '#6d7580';
+        }
+        // For very light backgrounds (>85%), use darker text for better contrast
         else {
-            return 'rgba(255, 255, 255, 0.85)';
+            return '#5a6169';
         }
     }
 
@@ -146,8 +150,12 @@ export class ThemeService extends Service {
      * @returns {string} - CSS text-shadow value
      */
     calculateSidebarTitleShadow_(lightness, lightText) {
-        // For light text on dark backgrounds, use a dark shadow
-        if (lightText || lightness < 50) {
+        // For very dark backgrounds or light text mode, use a dark shadow for contrast
+        if (lightText || lightness < 30) {
+            return '1px 1px 2px rgba(0, 0, 0, 0.5)';
+        }
+        // For dark to medium backgrounds, use medium dark shadow
+        else if (lightness < 50) {
             return '1px 1px 2px rgba(0, 0, 0, 0.3)';
         }
         // For dark text on light backgrounds, use a light shadow
@@ -166,24 +174,28 @@ export class ThemeService extends Service {
     calculateSidebarItemColor_(lightness, lightText) {
         // If light text mode is enabled, return white for dark backgrounds
         if (lightText) {
-            return 'rgba(255, 255, 255, 0.95)';
+            return 'rgba(255, 255, 255, 0.98)';
         }
 
-        // For very light backgrounds (>85%), use darker text for better contrast
-        if (lightness > 85) {
-            return '#2c3236';
+        // For very dark backgrounds (<30%), always use light text
+        if (lightness < 30) {
+            return 'rgba(255, 255, 255, 0.95)';
         }
-        // For medium-light backgrounds (70-85%), use medium-dark text
-        else if (lightness > 70) {
-            return '#373e44';
+        // For dark backgrounds (30-50%), use lighter text
+        else if (lightness < 50) {
+            return 'rgba(255, 255, 255, 0.9)';
         }
         // For medium backgrounds (50-70%), use darker text
-        else if (lightness > 50) {
+        else if (lightness < 70) {
             return '#444444';
         }
-        // For darker backgrounds (<50%), use lighter text
+        // For medium-light backgrounds (70-85%), use medium-dark text
+        else if (lightness < 85) {
+            return '#373e44';
+        }
+        // For very light backgrounds (>85%), use darker text for better contrast
         else {
-            return 'rgba(255, 255, 255, 0.9)';
+            return '#2c3236';
         }
     }
 
@@ -194,17 +206,25 @@ export class ThemeService extends Service {
      * @returns {string} - Background color for hover state
      */
     calculateSidebarItemHoverBg_(lightness, lightText) {
-        // For light text mode or dark backgrounds, use lighter hover
-        if (lightText || lightness < 50) {
+        // For very dark backgrounds (<30%) or light text mode, use lighter hover
+        if (lightText || lightness < 30) {
+            return 'rgba(255, 255, 255, 0.2)';
+        }
+        // For dark backgrounds (30-50%), use lighter hover
+        else if (lightness < 50) {
             return 'rgba(255, 255, 255, 0.15)';
         }
-        // For very light backgrounds (>85%), use slightly darker hover
-        else if (lightness > 85) {
-            return 'rgba(220, 220, 220, 0.9)';
-        }
-        // For medium-light backgrounds, use medium hover
-        else {
+        // For medium backgrounds (50-70%), use medium hover
+        else if (lightness < 70) {
             return 'rgba(243, 243, 243, 0.8)';
+        }
+        // For light backgrounds (70-85%), use medium hover
+        else if (lightness < 85) {
+            return 'rgba(220, 220, 220, 0.85)';
+        }
+        // For very light backgrounds (>85%), use slightly darker hover
+        else {
+            return 'rgba(220, 220, 220, 0.9)';
         }
     }
 
@@ -215,17 +235,127 @@ export class ThemeService extends Service {
      * @returns {string} - Background color for active state
      */
     calculateSidebarItemActiveBg_(lightness, lightText) {
-        // For light text mode or dark backgrounds, use lighter active state
-        if (lightText || lightness < 50) {
+        // For very dark backgrounds (<30%) or light text mode, use lighter active state
+        if (lightText || lightness < 30) {
+            return 'rgba(255, 255, 255, 0.3)';
+        }
+        // For dark backgrounds (30-50%), use lighter active state
+        else if (lightness < 50) {
             return 'rgba(255, 255, 255, 0.25)';
         }
+        // For medium backgrounds (50-70%), use bright active state
+        else if (lightness < 70) {
+            return '#fefeff';
+        }
+        // For light backgrounds (70-85%), use slightly darker active state
+        else if (lightness < 85) {
+            return 'rgba(210, 210, 210, 0.9)';
+        }
         // For very light backgrounds (>85%), use more prominent active state
-        else if (lightness > 85) {
+        else {
             return 'rgba(210, 210, 210, 0.95)';
         }
-        // For medium-light backgrounds, use bright active state
+    }
+
+    /**
+     * Calculate appropriate text color for toolbar
+     * Toolbar has a semi-transparent dark background (#00000040), so we need to ensure
+     * text remains visible regardless of the desktop background lightness
+     * @param {number} lightness - Background lightness value (0-100)
+     * @param {boolean} lightText - Whether light text mode is enabled
+     * @returns {string} - Color value for toolbar text
+     */
+    calculateToolbarTextColor_(lightness, lightText) {
+        // The toolbar has a dark semi-transparent overlay, so white text usually works best
+        // However, with very light backgrounds and low transparency, we may need darker text
+
+        // For light text mode, always use white
+        if (lightText) {
+            return 'rgba(255, 255, 255, 0.95)';
+        }
+
+        // For very light backgrounds (>90%), use slightly darker text for better contrast
+        if (lightness > 90) {
+            return 'rgba(255, 255, 255, 0.85)';
+        }
+        // For most cases, white text works well on the semi-transparent dark toolbar
         else {
-            return '#fefeff';
+            return 'rgba(255, 255, 255, 0.95)';
+        }
+    }
+
+    /**
+     * Calculate appropriate text color for window headers
+     * Window headers use the theme's HSL background, so text needs to adapt to lightness
+     * @param {number} lightness - Background lightness value (0-100)
+     * @param {boolean} lightText - Whether light text mode is enabled
+     * @returns {string} - Color value for window header text
+     */
+    calculateWindowHeadColor_(lightness, lightText) {
+        // If light text mode is enabled, use white for dark backgrounds
+        if (lightText) {
+            return 'rgba(255, 255, 255, 0.98)';
+        }
+
+        // For very dark backgrounds (<30%), always use light text
+        if (lightness < 30) {
+            return 'rgba(255, 255, 255, 0.95)';
+        }
+        // For dark backgrounds (30-50%), use lighter text
+        else if (lightness < 50) {
+            return 'rgba(255, 255, 255, 0.9)';
+        }
+        // For medium backgrounds (50-70%), use darker text
+        else if (lightness < 70) {
+            return '#444444';
+        }
+        // For medium-light backgrounds (70-85%), use medium-dark text
+        else if (lightness < 85) {
+            return '#373e44';
+        }
+        // For very light backgrounds (>85%), use darker text for better contrast
+        else {
+            return '#2c3236';
+        }
+    }
+
+    /**
+     * Calculate CSS filter for window action buttons (close, minimize, maximize)
+     * Icons are black SVGs that need to be inverted on dark backgrounds
+     * @param {number} lightness - Background lightness value (0-100)
+     * @param {boolean} lightText - Whether light text mode is enabled
+     * @returns {string} - CSS filter value
+     */
+    calculateWindowActionBtnFilter_(lightness, lightText) {
+        // For very dark backgrounds or light text mode, invert the black icons to white
+        if (lightText || lightness < 50) {
+            return 'invert(1) brightness(1.2)';
+        }
+        // For light backgrounds, keep icons black
+        else {
+            return 'none';
+        }
+    }
+
+    /**
+     * Calculate appropriate text color for window navbar (address bar)
+     * @param {number} lightness - Background lightness value (0-100)
+     * @param {boolean} lightText - Whether light text mode is enabled
+     * @returns {string} - Color value for navbar text
+     */
+    calculateWindowNavbarTextColor_(lightness, lightText) {
+        // Navbar has its own light background (#f1f3f4), but we still adapt for extreme cases
+        // For very dark theme backgrounds, the whole window becomes dark
+        if (lightText || lightness < 30) {
+            return 'rgba(255, 255, 255, 0.9)';
+        }
+        // For dark backgrounds
+        else if (lightness < 50) {
+            return '#e0e0e0';
+        }
+        // For normal to light backgrounds, use the default dark text
+        else {
+            return '#41484c';
         }
     }
 
@@ -263,6 +393,23 @@ export class ThemeService extends Service {
 
         const sidebarItemActiveBg = this.calculateSidebarItemActiveBg_(s.lig, s.light_text);
         this.root.style.setProperty('--window-sidebar-item-active-bg', sidebarItemActiveBg);
+
+        // Calculate toolbar text color for proper contrast with semi-transparent toolbar
+        const toolbarTextColor = this.calculateToolbarTextColor_(s.lig, s.light_text);
+        this.root.style.setProperty('--toolbar-text-color', toolbarTextColor);
+
+        // Calculate window head text color for proper contrast
+        const windowHeadColor = this.calculateWindowHeadColor_(s.lig, s.light_text);
+        this.root.style.setProperty('--window-head-color', windowHeadColor);
+
+        // Calculate window action button filter for icon visibility on dark backgrounds
+        const windowActionBtnFilter = this.calculateWindowActionBtnFilter_(s.lig, s.light_text);
+        this.root.style.setProperty('--window-action-btn-filter', windowActionBtnFilter);
+
+        // Calculate window navbar text colors
+        const windowNavbarTextColor = this.calculateWindowNavbarTextColor_(s.lig, s.light_text);
+        this.root.style.setProperty('--window-navbar-text-color', windowNavbarTextColor);
+        this.root.style.setProperty('--window-navbar-text-color-hover', windowNavbarTextColor);
 
         // TODO: Should we debounce this to reduce traffic?
         this.#broadcastService.sendBroadcast('themeChanged', {
