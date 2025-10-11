@@ -41,10 +41,19 @@ function UIAlert(options){
             ]
         }
 
-        // set body icon
-        options.body_icon = options.body_icon ?? window.icons['warning-sign.svg'];
-        if(options.type === 'success')
-            options.body_icon = window.icons['c-check.svg'];
+        // Map alert types to icons
+        const typeIconMap = {
+            'info': 'bell.svg',
+            'success': 'c-check.svg', 
+            'warning': 'warning-sign.svg',
+            'error': 'danger.svg',
+            'question': 'question.svg'
+        };
+
+        // Set body icon based on type or custom icon
+        const alertType = options.type || 'warning';
+        const defaultIcon = typeIconMap[alertType] || typeIconMap['warning'];
+        options.body_icon = options.icon ? window.icons[options.icon] : window.icons[defaultIcon];
 
         let santized_message = html_encode(options.message);
 
@@ -65,11 +74,26 @@ function UIAlert(options){
         if(options.buttons && options.buttons.length > 0){
             h += `<div style="overflow:hidden; margin-top:20px;">`;
             for(let y=0; y<options.buttons.length; y++){
-                h += `<button class="button button-block button-${html_encode(options.buttons[y].type)} alert-resp-button" 
-                                data-label="${html_encode(options.buttons[y].label)}"
-                                data-value="${html_encode(options.buttons[y].value ?? options.buttons[y].label)}"
-                                ${options.buttons[y].type === 'primary' ? 'autofocus' : ''}
-                                >${html_encode(options.buttons[y].label)}</button>`;
+                // Handle both string and object button formats
+                let buttonConfig = options.buttons[y];
+                if(typeof buttonConfig === 'string') {
+                    buttonConfig = {
+                        label: buttonConfig,
+                        value: buttonConfig,
+                        type: y === 0 ? 'primary' : 'default'
+                    };
+                }
+                
+                const buttonType = buttonConfig.type || (y === 0 ? 'primary' : 'default');
+                const buttonValue = buttonConfig.value || buttonConfig.label;
+                const isPrimary = buttonType === 'primary';
+                
+                h += `<button class="button button-block button-${html_encode(buttonType)} alert-resp-button" 
+                                data-label="${html_encode(buttonConfig.label)}"
+                                data-value="${html_encode(buttonValue)}"
+                                aria-label="${html_encode(buttonConfig.label)}"
+                                ${isPrimary ? 'autofocus' : ''}
+                                >${html_encode(buttonConfig.label)}</button>`;
             }
             h += `</div>`;
         }
@@ -90,7 +114,7 @@ function UIAlert(options){
             draggable_body: options.draggable_body ?? true,
             allow_context_menu: false,
             show_in_taskbar: false,
-            window_class: 'window-alert',
+            window_class: `window-alert window-alert-${alertType}`,
             dominant: true,
             body_content: h,
             width: 350,
@@ -106,8 +130,31 @@ function UIAlert(options){
                 'backdrop-filter': 'blur(3px)',
             }
         });
+        
+        // Add accessibility attributes
+        $(el_window).attr('role', 'alertdialog');
+        $(el_window).attr('aria-labelledby', 'alert-title');
+        $(el_window).find('.window-alert-message').attr('id', 'alert-message');
+        $(el_window).attr('aria-describedby', 'alert-message');
+        
         // focus to primary btn
         $(el_window).find('.button-primary').focus();
+
+        // --------------------------------------------------------
+        // Keyboard navigation
+        // --------------------------------------------------------
+        $(el_window).on('keydown', function(event) {
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                event.stopPropagation();
+                // Close with the last button's value or 'cancel'
+                const lastButton = $(el_window).find('.alert-resp-button').last();
+                const cancelValue = lastButton.length ? lastButton.attr('data-value') : 'cancel';
+                resolve(cancelValue);
+                $(el_window).close();
+                return false;
+            }
+        });
 
         // --------------------------------------------------------
         // Button pressed
