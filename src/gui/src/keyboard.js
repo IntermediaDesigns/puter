@@ -601,6 +601,25 @@ $(document).bind("keyup keydown", async function(e){
             $($parent_window).close();
         }
     }
+    
+    //-----------------------------------------------------------------------------
+    // Toggle Desktop Icons
+    // ctrl + shift + d, will toggle desktop icons visibility
+    //-----------------------------------------------------------------------------
+    if((e.ctrlKey || e.metaKey) && e.shiftKey && e.which === 68 && !$(focused_el).is('input') && !$(focused_el).is('textarea')){
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Only work when desktop is active
+        if($(window.active_element).hasClass('desktop')){
+            window.mutate_user_preferences({
+                show_desktop_icons: !window.user_preferences.show_desktop_icons,
+            });
+            window.toggle_desktop_icons_visibility();
+        }
+        
+        return false;
+    }
 
     //-----------------------------------------------------------------------------
     // Copy

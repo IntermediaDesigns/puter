@@ -2503,6 +2503,49 @@ window.delete_desktop_item_positions = ()=>{
     puter.kv.del('desktop_item_positions');
 }
 
+window.toggle_desktop_icons_visibility = () => {
+    const desktopItems = document.querySelectorAll('.desktop .item');
+    const desktopElement = document.querySelector('.desktop');
+    const shouldShow = window.user_preferences.show_desktop_icons;
+    
+    desktopItems.forEach(item => {
+        if (shouldShow) {
+            item.style.display = '';
+            item.style.visibility = '';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+    
+    // Add/remove visual indicator class
+    if (desktopElement) {
+        if (shouldShow) {
+            desktopElement.classList.remove('icons-hidden');
+        } else {
+            desktopElement.classList.add('icons-hidden');
+        }
+    }
+    
+    // Show notification for user feedback
+    if (typeof UINotification === 'function') {
+        UINotification({
+            title: shouldShow ? i18n('show_desktop_icons') : i18n('hide_desktop_icons'),
+            text: shouldShow ? i18n('desktop_icons_visible') : i18n('desktop_icons_hidden'),
+            icon: window.icons['desktop.svg'] || window.icons['folder-desktop.svg'] || window.icons['bell.svg'],
+            close: () => {}
+        });
+    }
+    
+    // Update context menu text for next time
+    const contextMenuItems = document.querySelectorAll('.context-menu');
+    contextMenuItems.forEach(menu => {
+        const hideShowItem = menu.querySelector('[data-i18n="hide_desktop_icons"], [data-i18n="show_desktop_icons"]');
+        if (hideShowItem) {
+            hideShowItem.textContent = shouldShow ? i18n('hide_desktop_icons') : i18n('show_desktop_icons');
+        }
+    });
+};
+
 window.change_clock_visible = (clock_visible) => {
     let newValue = clock_visible || window.user_preferences.clock_visible;
     
