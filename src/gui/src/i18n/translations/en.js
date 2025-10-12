@@ -278,6 +278,7 @@ const en = {
         hide_desktop_icons: 'Hide Desktop Icons',
         desktop_icons_visible: 'Desktop icons are now visible',
         desktop_icons_hidden: 'Desktop icons are now hidden',
+        desktop_icons_hidden_label: 'Desktop Icons Hidden',
         sign_in_with_puter: "Sign in with Puter",
         sign_up: "Sign Up",
         signing_in: "Signing in…",

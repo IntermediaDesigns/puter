@@ -2517,12 +2517,14 @@ window.toggle_desktop_icons_visibility = () => {
         }
     });
     
-    // Add/remove visual indicator class
+    // Add/remove visual indicator class and set localized text
     if (desktopElement) {
         if (shouldShow) {
             desktopElement.classList.remove('icons-hidden');
+            desktopElement.removeAttribute('data-desktop-icons-hidden-label');
         } else {
             desktopElement.classList.add('icons-hidden');
+            desktopElement.setAttribute('data-desktop-icons-hidden-label', i18n('desktop_icons_hidden_label'));
         }
     }
     

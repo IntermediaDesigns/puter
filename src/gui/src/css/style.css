@@ -433,7 +433,7 @@ select:focus {
 }
 
 .desktop.icons-hidden::after {
-  content: "Desktop Icons Hidden";
+  content: attr(data-desktop-icons-hidden-label);
   position: absolute;
   top: 50%;
   left: 50%;
