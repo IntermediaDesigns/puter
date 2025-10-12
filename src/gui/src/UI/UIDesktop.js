@@ -67,7 +67,7 @@ class ToolbarAutoHideSystem {
         }
 
         // Disable on mobile devices
-        if (window.isMobile || window.innerWidth < 768) {
+        if ((window.isMobile && (window.isMobile.phone || window.isMobile.tablet)) || window.innerWidth < 768) {
             return;
         }
 
