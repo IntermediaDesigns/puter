@@ -200,10 +200,23 @@ const refresh_item_container = function(el_item_container, options){
             }
 
             // Apply desktop icons visibility preference after items are created
-            if (container_path === window.desktop_path && window.user_preferences && window.user_preferences.show_desktop_icons === false) {
-                $(el_item_container).find('.item').hide();
-                $(el_item_container).addClass('icons-hidden');
-                $(el_item_container).attr('data-desktop-icons-hidden-label', i18n('desktop_icons_hidden_label'));
+            if (container_path === window.desktop_path) {
+                // Check preference with fallback to localStorage for immediate loading
+                const showIcons = window.user_preferences?.show_desktop_icons ?? 
+                                 (() => {
+                                     try {
+                                         const localPrefs = JSON.parse(localStorage.getItem('user_preferences'));
+                                         return localPrefs?.show_desktop_icons ?? true;
+                                     } catch {
+                                         return true;
+                                     }
+                                 })();
+                
+                if (!showIcons) {
+                    $(el_item_container).find('.item').hide();
+                    $(el_item_container).addClass('icons-hidden');
+                    $(el_item_container).attr('data-desktop-icons-hidden-label', i18n('desktop_icons_hidden_label'));
+                }
             }
 
             // Refresh desktop items cache when items are loaded/refreshed

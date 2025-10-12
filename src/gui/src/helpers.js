@@ -2527,16 +2527,32 @@ window.refreshDesktopItemsCache = (desktopElement = null) => {
     } else {
         window._cachedDesktopItems = Array.from(document.querySelectorAll('.desktop .item'));
     }
+    // Clear cache if no items found to force re-query next time
+    if (window._cachedDesktopItems.length === 0) {
+        window._cachedDesktopItems = null;
+    }
 };
 
 window.toggle_desktop_icons_visibility = (desktopElement = null) => {
-    // Use cached desktop items if available, otherwise refresh the cache
-    if (!window._cachedDesktopItems) {
-        window.refreshDesktopItemsCache(desktopElement);
-    }
     const desktop = desktopElement || document.querySelector('.desktop');
-    const desktopItems = window._cachedDesktopItems || [];
-    const shouldShow = window.user_preferences.show_desktop_icons;
+    
+    // Get preference with fallback to localStorage for immediate access
+    const shouldShow = window.user_preferences?.show_desktop_icons ?? 
+                      (() => {
+                          try {
+                              const localPrefs = JSON.parse(localStorage.getItem('user_preferences'));
+                              return localPrefs?.show_desktop_icons ?? true;
+                          } catch {
+                              return true;
+                          }
+                      })();
+    
+    // Get desktop items - use cache if available, otherwise query directly
+    let desktopItems = window._cachedDesktopItems;
+    if (!desktopItems || desktopItems.length === 0) {
+        desktopItems = Array.from(desktop ? desktop.querySelectorAll('.item') : document.querySelectorAll('.desktop .item'));
+        window._cachedDesktopItems = desktopItems;
+    }
     
     desktopItems.forEach(item => {
         if (shouldShow) {
