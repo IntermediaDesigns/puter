@@ -2535,15 +2535,6 @@ window.toggle_desktop_icons_visibility = () => {
             close: () => {}
         });
     }
-    
-    // Update context menu text for next time
-    const contextMenuItems = document.querySelectorAll('.context-menu');
-    contextMenuItems.forEach(menu => {
-        const hideShowItem = menu.querySelector('[data-i18n="hide_desktop_icons"], [data-i18n="show_desktop_icons"]');
-        if (hideShowItem) {
-            hideShowItem.textContent = shouldShow ? i18n('hide_desktop_icons') : i18n('show_desktop_icons');
-        }
-    });
 };
 
 window.change_clock_visible = (clock_visible) => {
