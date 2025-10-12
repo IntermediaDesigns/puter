@@ -2511,7 +2511,6 @@ window.toggle_desktop_icons_visibility = () => {
     desktopItems.forEach(item => {
         if (shouldShow) {
             item.style.display = '';
-            item.style.visibility = '';
         } else {
             item.style.display = 'none';
         }

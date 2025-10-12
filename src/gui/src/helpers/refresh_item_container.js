@@ -200,7 +200,7 @@ const refresh_item_container = function(el_item_container, options){
             }
 
             // Apply desktop icons visibility preference after items are created
-            if (container_path === window.desktop_path && window.user_preferences && window.user_preferences.show_desktop_icons === false) {
+            if (container_path === window.desktop_path && window.user_preferences && window.user_preferences.show_desktop_icons !== true) {
                 $(el_item_container).find('.item').hide();
                 $(el_item_container).addClass('icons-hidden');
                 $(el_item_container).attr('data-desktop-icons-hidden-label', i18n('desktop_icons_hidden_label'));
