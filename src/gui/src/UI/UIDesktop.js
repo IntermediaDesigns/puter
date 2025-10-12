@@ -43,6 +43,250 @@ import launch_app from "../helpers/launch_app.js"
 import item_icon from "../helpers/item_icon.js"
 import UIWindowSearch from "./UIWindowSearch.js"
 
+class ToolbarAutoHideSystem {
+    constructor() {
+        this.enabled = false;
+        this.isVisible = true;
+        this.hideTimer = null;
+        this.toolbar = null;
+        this.revealTrigger = null;
+        this.mouseY = 0;
+        this.hideDelay = 2000; // 2 seconds
+        this.revealZoneHeight = 50; // 50px from top
+        
+        this.init();
+    }
+
+    async init() {
+        // Wait for toolbar to be available
+        this.toolbar = $('.toolbar').first();
+        if (this.toolbar.length === 0) {
+            // Retry after a short delay if toolbar isn't ready yet
+            setTimeout(() => this.init(), 100);
+            return;
+        }
+
+        // Disable on mobile devices
+        if (window.isMobile || window.innerWidth < 768) {
+            return;
+        }
+
+        // Load user preference
+        const autoHide = await puter.kv.get('user_preferences.toolbar_auto_hide');
+        this.enabled = autoHide === 'true' || autoHide === true;
+        
+        if (this.enabled) {
+            this.setupEventListeners();
+            this.createRevealTrigger();
+        }
+
+        // Update window container position based on current state
+        this.updateWindowContainerPosition();
+    }
+
+    setEnabled(enabled) {
+        this.enabled = enabled;
+        if (enabled) {
+            this.setupEventListeners();
+            this.createRevealTrigger();
+        } else {
+            this.removeEventListeners();
+            this.removeRevealTrigger();
+            this.showToolbar();
+        }
+    }
+
+    setupEventListeners() {
+        // Mouse movement tracking
+        $(document).on('mousemove.toolbarAutoHide', (e) => {
+            this.mouseY = e.clientY;
+            this.handleMouseMove();
+        });
+
+        // Toolbar hover events
+        this.toolbar.on('mouseenter.toolbarAutoHide', () => {
+            this.clearHideTimer();
+            this.showToolbar();
+        });
+
+        this.toolbar.on('mouseleave.toolbarAutoHide', () => {
+            if (this.enabled && this.mouseY > this.revealZoneHeight) {
+                this.scheduleHide();
+            }
+        });
+
+        // Toolbar button interactions
+        this.toolbar.on('click.toolbarAutoHide focus.toolbarAutoHide', '.toolbar-btn', () => {
+            this.clearHideTimer();
+            this.showToolbar();
+        });
+
+        // Keyboard shortcuts for accessibility
+        $(document).on('keydown.toolbarAutoHide', (e) => {
+            if (e.altKey || e.key === 'F10') {
+                this.toggleToolbar();
+                e.preventDefault();
+            }
+        });
+
+        // Focus events for accessibility
+        $(document).on('focus.toolbarAutoHide', '.toolbar-btn', () => {
+            this.showToolbar();
+        });
+
+        // Window events
+        $(window).on('resize.toolbarAutoHide', () => {
+            this.updateWindowContainerPosition();
+        });
+
+        // Fullscreen change events
+        $(document).on('fullscreenchange.toolbarAutoHide webkitfullscreenchange.toolbarAutoHide mozfullscreenchange.toolbarAutoHide msfullscreenchange.toolbarAutoHide', () => {
+            if (window.is_fullscreen()) {
+                this.showToolbar();
+                this.clearHideTimer();
+            }
+        });
+
+        // Context menu events - keep toolbar visible when context menus are open
+        $(document).on('contextmenu.toolbarAutoHide', () => {
+            this.clearHideTimer();
+            this.showToolbar();
+        });
+
+        // Modal/dialog events - keep toolbar visible when modals are active
+        $(document).on('modal-open.toolbarAutoHide dialog-open.toolbarAutoHide', () => {
+            this.clearHideTimer();
+            this.showToolbar();
+        });
+
+        // Upload/download events - keep toolbar visible during file operations
+        $(document).on('upload-start.toolbarAutoHide download-start.toolbarAutoHide', () => {
+            this.clearHideTimer();
+            this.showToolbar();
+        });
+
+        // Page visibility change - hide toolbar when page is not visible
+        $(document).on('visibilitychange.toolbarAutoHide', () => {
+            if (document.hidden) {
+                this.clearHideTimer();
+                this.hideToolbar();
+            } else if (this.enabled) {
+                this.showToolbar();
+            }
+        });
+    }
+
+    removeEventListeners() {
+        $(document).off('.toolbarAutoHide');
+        this.toolbar.off('.toolbarAutoHide');
+        $(window).off('.toolbarAutoHide');
+        this.clearHideTimer();
+    }
+
+    createRevealTrigger() {
+        if (this.revealTrigger) return;
+        
+        this.revealTrigger = $('<div class="toolbar-reveal-trigger"></div>');
+        $('body').append(this.revealTrigger);
+        
+        this.revealTrigger.on('mouseenter', () => {
+            this.showToolbar();
+        });
+    }
+
+    removeRevealTrigger() {
+        if (this.revealTrigger) {
+            this.revealTrigger.remove();
+            this.revealTrigger = null;
+        }
+    }
+
+    handleMouseMove() {
+        if (!this.enabled) return;
+
+        if (this.mouseY <= this.revealZoneHeight) {
+            // Mouse in reveal zone
+            this.clearHideTimer();
+            this.showToolbar();
+        } else if (this.isVisible) {
+            // Mouse outside reveal zone, schedule hide
+            this.scheduleHide();
+        }
+    }
+
+    scheduleHide() {
+        this.clearHideTimer();
+        this.hideTimer = setTimeout(() => {
+            this.hideToolbar();
+        }, this.hideDelay);
+    }
+
+    clearHideTimer() {
+        if (this.hideTimer) {
+            clearTimeout(this.hideTimer);
+            this.hideTimer = null;
+        }
+    }
+
+    showToolbar() {
+        if (!this.isVisible) {
+            this.toolbar.removeClass('toolbar-hidden');
+            this.toolbar.attr('aria-hidden', 'false');
+            this.isVisible = true;
+            this.updateWindowContainerPosition();
+            
+            // Announce to screen readers
+            this.announceStateChange('visible');
+        }
+    }
+
+    hideToolbar() {
+        if (this.isVisible) {
+            this.toolbar.addClass('toolbar-hidden');
+            this.toolbar.attr('aria-hidden', 'true');
+            this.isVisible = false;
+            this.updateWindowContainerPosition();
+            
+            // Announce to screen readers
+            this.announceStateChange('hidden');
+        }
+    }
+
+    toggleToolbar() {
+        if (this.isVisible) {
+            this.hideToolbar();
+        } else {
+            this.showToolbar();
+        }
+    }
+
+    updateWindowContainerPosition() {
+        const topOffset = this.isVisible ? window.toolbar_height : 0;
+        $('.window-container').css('top', topOffset);
+    }
+
+    announceStateChange(state) {
+        // Create or update aria-live region for screen readers
+        let liveRegion = $('#toolbar-live-region');
+        if (liveRegion.length === 0) {
+            liveRegion = $('<div id="toolbar-live-region" aria-live="polite" aria-atomic="true" style="position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden;"></div>');
+            $('body').append(liveRegion);
+        }
+        
+        const message = state === 'visible' ? 
+            i18n('toolbar_auto_hide') + ' ' + i18n('toolbar_auto_hide_enabled') :
+            i18n('toolbar_auto_hide') + ' ' + i18n('toolbar_auto_hide_disabled');
+        
+        liveRegion.text(message);
+    }
+
+    destroy() {
+        this.removeEventListeners();
+        this.removeRevealTrigger();
+        this.clearHideTimer();
+    }
+}
+
 async function UIDesktop(options){
     let h = '';
 
@@ -710,6 +954,7 @@ async function UIDesktop(options){
         show_hidden_files: JSON.parse(await puter.kv.get('user_preferences.show_hidden_files')),
         language: await puter.kv.get('user_preferences.language'),
         clock_visible: await puter.kv.get('user_preferences.clock_visible'),
+        toolbar_auto_hide: JSON.parse(await puter.kv.get('user_preferences.toolbar_auto_hide')),
     };
 
     // update default apps
@@ -1144,6 +1389,9 @@ async function UIDesktop(options){
 
     // prepend toolbar to desktop
     $(ht).insertBefore(el_desktop);
+
+    // Initialize toolbar auto-hide system
+    window.toolbarAutoHideSystem = new ToolbarAutoHideSystem();
 
     // notification container
     $('body').append(`<div class="notification-container"><div class="notifications-close-all">${i18n('close_all')}</div></div>`);

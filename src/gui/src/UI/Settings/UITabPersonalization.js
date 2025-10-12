@@ -48,6 +48,18 @@ export default {
                     <option value="show">${i18n('clock_visible_show')}</option>
                 </select>
             </div>
+            <div class="settings-card">
+                <div>
+                    <strong style="display:block;">${i18n('toolbar_auto_hide')}</strong>
+                    <p style="margin-left: 0px; margin-top: 5px; margin-bottom: 10px; color: #666;">${i18n('toolbar_auto_hide_description')}</p>
+                </div>
+                <div style="flex-grow:1;">
+                    <select class="change-toolbar-auto-hide" style="margin-left: 10px; max-width: 300px;">
+                        <option value="false">${i18n('toolbar_auto_hide_disabled')}</option>
+                        <option value="true">${i18n('toolbar_auto_hide_enabled')}</option>
+                    </select>
+                </div>
+            </div>
             <div class="settings-card" style="display: block; height: auto;">
                 <strong style="margin: 15px 0 30px; display: block;">${i18n('menubar_style')}</strong>
                 <div style="flex-grow:1; margin-top: 10px;">
@@ -100,6 +112,15 @@ export default {
             window.change_clock_visible(this.value);
         });
 
+        $el_window.on('change', 'select.change-toolbar-auto-hide', function(e){
+            const autoHide = this.value === 'true';
+            window.mutate_user_preferences({ toolbar_auto_hide: autoHide });
+            // Apply the setting immediately if toolbar auto-hide system is initialized
+            if (window.toolbarAutoHideSystem) {
+                window.toolbarAutoHideSystem.setEnabled(autoHide);
+            }
+        });
+
         window.change_clock_visible();
 
         puter.kv.get('menubar_style').then(async (val) => {
@@ -111,6 +132,11 @@ export default {
             else if(val === 'window'){
                 $el_window.find('#menubar_style_window').prop('checked', true);
             }
+        })
+
+        puter.kv.get('user_preferences.toolbar_auto_hide').then(async (val) => {
+            const autoHide = val === 'true' || val === true;
+            $el_window.find('.change-toolbar-auto-hide').val(autoHide.toString());
         })
 
         $el_window.find('.menubar_style').on('change', function (e) {
