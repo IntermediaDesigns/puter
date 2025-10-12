@@ -2503,6 +2503,16 @@ window.delete_desktop_item_positions = ()=>{
     puter.kv.del('desktop_item_positions');
 }
 
+window.getDesktopIcon = () => {
+    const desktopIcons = ['desktop.svg', 'folder-desktop.svg'];
+    for (const iconName of desktopIcons) {
+        if (window.icons[iconName]) {
+            return window.icons[iconName];
+        }
+    }
+    return window.icons['bell.svg'] || window.icons['folder.svg']; // Final fallback
+};
+
 window.toggle_desktop_icons_visibility = () => {
     const desktopItems = document.querySelectorAll('.desktop .item');
     const desktopElement = document.querySelector('.desktop');
@@ -2529,21 +2539,10 @@ window.toggle_desktop_icons_visibility = () => {
     
     // Show notification for user feedback
     if (typeof UINotification === 'function') {
-        // Get appropriate desktop icon with fallbacks
-        const getDesktopIcon = () => {
-            const desktopIcons = ['desktop.svg', 'folder-desktop.svg'];
-            for (const iconName of desktopIcons) {
-                if (window.icons[iconName]) {
-                    return window.icons[iconName];
-                }
-            }
-            return window.icons['bell.svg'] || window.icons['folder.svg']; // Final fallback
-        };
-
         UINotification({
             title: shouldShow ? i18n('show_desktop_icons') : i18n('hide_desktop_icons'),
             text: shouldShow ? i18n('desktop_icons_visible') : i18n('desktop_icons_hidden'),
-            icon: getDesktopIcon(),
+            icon: window.getDesktopIcon(),
             close: () => {}
         });
     }
