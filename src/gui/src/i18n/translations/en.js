@@ -290,6 +290,7 @@ const en = {
         taskmgr_header_name: "Name",
         taskmgr_header_status: "Status",
         taskmgr_header_type: "Type",
+        toolbar: "Toolbar",
         toolbar_auto_hide: "Toolbar Auto-Hide",
         toolbar_auto_hide_description: "Automatically hide the toolbar after 2 seconds of inactivity",
         toolbar_auto_hide_enabled: "Enabled",

@@ -274,8 +274,8 @@ class ToolbarAutoHideSystem {
         }
         
         const message = state === 'visible' ? 
-            i18n('toolbar_auto_hide') + ' ' + i18n('toolbar_auto_hide_enabled') :
-            i18n('toolbar_auto_hide') + ' ' + i18n('toolbar_auto_hide_disabled');
+            i18n('toolbar') + ' ' + i18n('toolbar_auto_hide_enabled') :
+            i18n('toolbar') + ' ' + i18n('toolbar_auto_hide_disabled');
         
         liveRegion.text(message);
     }
