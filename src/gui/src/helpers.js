@@ -2513,9 +2513,10 @@ window.getDesktopIcon = () => {
     return window.icons['bell.svg'] || window.icons['folder.svg']; // Final fallback
 };
 
-window.toggle_desktop_icons_visibility = () => {
-    const desktopItems = document.querySelectorAll('.desktop .item');
-    const desktopElement = document.querySelector('.desktop');
+window.toggle_desktop_icons_visibility = (desktopElement = null) => {
+    // Cache DOM elements to avoid repeated queries
+    const desktop = desktopElement || document.querySelector('.desktop');
+    const desktopItems = desktop ? desktop.querySelectorAll('.item') : document.querySelectorAll('.desktop .item');
     const shouldShow = window.user_preferences.show_desktop_icons;
     
     desktopItems.forEach(item => {
@@ -2527,13 +2528,13 @@ window.toggle_desktop_icons_visibility = () => {
     });
     
     // Add/remove visual indicator class and set localized text
-    if (desktopElement) {
+    if (desktop) {
         if (shouldShow) {
-            desktopElement.classList.remove('icons-hidden');
-            desktopElement.removeAttribute('data-desktop-icons-hidden-label');
+            desktop.classList.remove('icons-hidden');
+            desktop.removeAttribute('data-desktop-icons-hidden-label');
         } else {
-            desktopElement.classList.add('icons-hidden');
-            desktopElement.setAttribute('data-desktop-icons-hidden-label', i18n('desktop_icons_hidden_label'));
+            desktop.classList.add('icons-hidden');
+            desktop.setAttribute('data-desktop-icons-hidden-label', i18n('desktop_icons_hidden_label'));
         }
     }
     
