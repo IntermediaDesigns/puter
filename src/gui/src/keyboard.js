@@ -611,7 +611,7 @@ $(document).bind("keyup keydown", async function(e){
         e.stopPropagation();
         
         // Only work when desktop is active
-        if($(window.active_element).hasClass('desktop')){
+        if(window.active_element && window.active_element.classList.contains('desktop')){
             window.mutate_user_preferences({
                 show_desktop_icons: !window.user_preferences.show_desktop_icons,
             });

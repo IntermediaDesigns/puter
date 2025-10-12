@@ -2504,19 +2504,38 @@ window.delete_desktop_item_positions = ()=>{
 }
 
 window.getDesktopIcon = () => {
-    const desktopIcons = ['desktop.svg', 'folder-desktop.svg'];
+    // Try the most semantically appropriate icons first
+    const desktopIcons = ['desktop.svg', 'folder-desktop.svg', 'folder.svg'];
     for (const iconName of desktopIcons) {
         if (window.icons[iconName]) {
             return window.icons[iconName];
         }
     }
-    return window.icons['bell.svg'] || window.icons['folder.svg']; // Final fallback
+    // As a last resort, fall back to 'bell.svg' if available, otherwise return null.
+    // If 'bell.svg' is used, it is only as a generic placeholder.
+    return window.icons['bell.svg'] || null;
+};
+
+// Cache for desktop items NodeList
+window._cachedDesktopItems = null;
+
+// Function to refresh the desktop items cache
+window.refreshDesktopItemsCache = (desktopElement = null) => {
+    const desktop = desktopElement || document.querySelector('.desktop');
+    if (desktop) {
+        window._cachedDesktopItems = Array.from(desktop.querySelectorAll('.item'));
+    } else {
+        window._cachedDesktopItems = Array.from(document.querySelectorAll('.desktop .item'));
+    }
 };
 
 window.toggle_desktop_icons_visibility = (desktopElement = null) => {
-    // Cache DOM elements to avoid repeated queries
+    // Use cached desktop items if available, otherwise refresh the cache
+    if (!window._cachedDesktopItems) {
+        window.refreshDesktopItemsCache(desktopElement);
+    }
     const desktop = desktopElement || document.querySelector('.desktop');
-    const desktopItems = desktop ? desktop.querySelectorAll('.item') : document.querySelectorAll('.desktop .item');
+    const desktopItems = window._cachedDesktopItems || [];
     const shouldShow = window.user_preferences.show_desktop_icons;
     
     desktopItems.forEach(item => {

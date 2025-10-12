@@ -206,6 +206,11 @@ const refresh_item_container = function(el_item_container, options){
                 $(el_item_container).attr('data-desktop-icons-hidden-label', i18n('desktop_icons_hidden_label'));
             }
 
+            // Refresh desktop items cache when items are loaded/refreshed
+            if (container_path === window.desktop_path && typeof window.refreshDesktopItemsCache === 'function') {
+                window.refreshDesktopItemsCache(el_item_container);
+            }
+
             // if this is desktop, add Trash
             if($(el_item_container).hasClass('desktop')){
                 try{
