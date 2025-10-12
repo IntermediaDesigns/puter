@@ -2528,10 +2528,21 @@ window.toggle_desktop_icons_visibility = () => {
     
     // Show notification for user feedback
     if (typeof UINotification === 'function') {
+        // Get appropriate desktop icon with fallbacks
+        const getDesktopIcon = () => {
+            const desktopIcons = ['desktop.svg', 'folder-desktop.svg'];
+            for (const iconName of desktopIcons) {
+                if (window.icons[iconName]) {
+                    return window.icons[iconName];
+                }
+            }
+            return window.icons['bell.svg'] || window.icons['folder.svg']; // Final fallback
+        };
+
         UINotification({
             title: shouldShow ? i18n('show_desktop_icons') : i18n('hide_desktop_icons'),
             text: shouldShow ? i18n('desktop_icons_visible') : i18n('desktop_icons_hidden'),
-            icon: window.icons['desktop.svg'] || window.icons['folder-desktop.svg'] || window.icons['bell.svg'],
+            icon: getDesktopIcon(),
             close: () => {}
         });
     }
