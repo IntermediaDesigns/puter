@@ -606,7 +606,7 @@ $(document).bind("keyup keydown", async function(e){
     // Toggle Desktop Icons
     // ctrl + shift + d, will toggle desktop icons visibility
     //-----------------------------------------------------------------------------
-    if((e.ctrlKey || e.metaKey) && e.shiftKey && e.which === 68 && !$(focused_el).is('input') && !$(focused_el).is('textarea')){
+    if((e.ctrlKey || e.metaKey) && e.shiftKey && e.which === 68 && !$(focused_el).is('input') && !$(focused_el).is('textarea') && e.type === 'keydown'){
         e.preventDefault();
         e.stopPropagation();
         
