@@ -2503,6 +2503,87 @@ window.delete_desktop_item_positions = ()=>{
     puter.kv.del('desktop_item_positions');
 }
 
+window.getDesktopIcon = () => {
+    // Try the most semantically appropriate icons first
+    const desktopIcons = ['desktop.svg', 'folder-desktop.svg', 'folder.svg'];
+    for (const iconName of desktopIcons) {
+        if (window.icons[iconName]) {
+            return window.icons[iconName];
+        }
+    }
+    // As a last resort, fall back to 'bell.svg' if available, otherwise return null.
+    // If 'bell.svg' is used, it is only as a generic placeholder.
+    return window.icons['bell.svg'] || null;
+};
+
+// Cache for desktop items NodeList
+window._cachedDesktopItems = null;
+
+// Function to refresh the desktop items cache
+window.refreshDesktopItemsCache = (desktopElement = null) => {
+    const desktop = desktopElement || document.querySelector('.desktop');
+    if (desktop) {
+        window._cachedDesktopItems = Array.from(desktop.querySelectorAll('.item'));
+    } else {
+        window._cachedDesktopItems = Array.from(document.querySelectorAll('.desktop .item'));
+    }
+    // Clear cache if no items found to force re-query next time
+    if (window._cachedDesktopItems.length === 0) {
+        window._cachedDesktopItems = null;
+    }
+};
+
+window.toggle_desktop_icons_visibility = (desktopElement = null) => {
+    const desktop = desktopElement || document.querySelector('.desktop');
+    
+    // Get preference with fallback to localStorage for immediate access
+    const shouldShow = window.user_preferences?.show_desktop_icons ?? 
+                      (() => {
+                          try {
+                              const localPrefs = JSON.parse(localStorage.getItem('user_preferences'));
+                              return localPrefs?.show_desktop_icons ?? true;
+                          } catch {
+                              return true;
+                          }
+                      })();
+    
+    // Get desktop items - use cache if available, otherwise query directly
+    let desktopItems = window._cachedDesktopItems;
+    if (!desktopItems || desktopItems.length === 0) {
+        desktopItems = Array.from(desktop ? desktop.querySelectorAll('.item') : document.querySelectorAll('.desktop .item'));
+        window._cachedDesktopItems = desktopItems;
+    }
+    
+    desktopItems.forEach(item => {
+        if (shouldShow) {
+            item.style.display = '';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+    
+    // Add/remove visual indicator class and set localized text
+    if (desktop) {
+        if (shouldShow) {
+            desktop.classList.remove('icons-hidden');
+            desktop.removeAttribute('data-desktop-icons-hidden-label');
+        } else {
+            desktop.classList.add('icons-hidden');
+            desktop.setAttribute('data-desktop-icons-hidden-label', i18n('desktop_icons_hidden_label'));
+        }
+    }
+    
+    // Show notification for user feedback
+    if (typeof UINotification === 'function') {
+        UINotification({
+            title: shouldShow ? i18n('show_desktop_icons') : i18n('hide_desktop_icons'),
+            text: shouldShow ? i18n('desktop_icons_visible') : i18n('desktop_icons_hidden'),
+            icon: window.getDesktopIcon(),
+            close: () => {}
+        });
+    }
+};
+
 window.change_clock_visible = (clock_visible) => {
     let newValue = clock_visible || window.user_preferences.clock_visible;
     
