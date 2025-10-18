@@ -1604,6 +1604,47 @@ span.header-sort-icon img {
   margin-top: 10px;
 }
 
+/* Alert type-specific styling */
+.window-alert-info {
+  border-left: 4px solid #4A90E2;
+}
+
+.window-alert-info .window-body {
+  background-color: rgba(74, 144, 226, 0.05) !important;
+}
+
+.window-alert-success {
+  border-left: 4px solid #28a745;
+}
+
+.window-alert-success .window-body {
+  background-color: rgba(40, 167, 69, 0.05) !important;
+}
+
+.window-alert-warning {
+  border-left: 4px solid #ffc107;
+}
+
+.window-alert-warning .window-body {
+  background-color: rgba(255, 193, 7, 0.05) !important;
+}
+
+.window-alert-error {
+  border-left: 4px solid #dc3545;
+}
+
+.window-alert-error .window-body {
+  background-color: rgba(220, 53, 69, 0.05) !important;
+}
+
+.window-alert-question {
+  border-left: 4px solid #6f42c1;
+}
+
+.window-alert-question .window-body {
+  background-color: rgba(111, 66, 193, 0.05) !important;
+}
+
 .prompt-resp-button {
   margin-left: 10px;
 }
