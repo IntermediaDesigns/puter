@@ -273,6 +273,12 @@ class HLMkdir extends HLFilesystemOperation {
         console.log('USING PARENT', parent_node.selector.describe());
         let target_basename = _path.basename(values.path);
 
+        // Check if trying to create a directory directly in root
+        // The root directory is read-only, so we should reject this early
+        if ( parent_node.isRoot ) {
+            throw APIError.create('cannot_mkdir_in_root');
+        }
+
         const top_parent = values.create_missing_parents
             ? await this._create_top_parent({ top_parent: parent_node })
             : await this._get_existing_top_parent({ top_parent: parent_node })
