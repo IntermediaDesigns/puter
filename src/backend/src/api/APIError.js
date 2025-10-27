@@ -100,6 +100,10 @@ module.exports = class APIError {
             status: 422,
             message: 'Cannot write an item to the root directory.',
         },
+        'cannot_mkdir_in_root': {
+            status: 403,
+            message: 'Cannot create directories in the root directory. The root directory is read-only.',
+        },
         'cannot_overwrite_a_directory': {
             status: 422,
             message: 'Cannot overwrite a directory.',
