@@ -26,6 +26,7 @@ import UIWindowEmailConfirmationRequired from './UIWindowEmailConfirmationRequir
 import UIContextMenu from './UIContextMenu.js'
 import UIAlert from './UIAlert.js'
 import path from "../lib/path.js"
+import mime from "../lib/mime.js"
 import truncate_filename from '../helpers/truncate_filename.js';
 import launch_app from "../helpers/launch_app.js"
 import open_item from "../helpers/open_item.js"
@@ -1155,6 +1156,60 @@ function UIItem(options){
                 });
 
                 menu_items.push('-');
+            }
+
+            // -------------------------------------------
+            // Set as Desktop Background
+            // -------------------------------------------
+            // Check if this is an image file (not a folder, not in trash)
+            // Get the MIME type from options.type or detect from filename
+            const file_type = options.type || (options.name ? mime.getType(options.name) : null);
+            const is_image = !options.is_dir && file_type && file_type.startsWith('image/');
+            if(!is_trashed && !is_trash && is_image){
+                menu_items.push({
+                    html: i18n('set_as_desktop_background'),
+                    onClick: async function () {
+                        try {
+                            // Sign the file to get a read_url (signed URL with authentication)
+                            const signed_file = await puter.fs.sign(undefined, {uid: options.uid, action: 'read'});
+                            const file_data = signed_file.items || signed_file;
+
+                            if (!file_data || !file_data.read_url) {
+                                throw new Error('Could not get file URL');
+                            }
+
+                            // Set the desktop background immediately using the signed read_url
+                            window.set_desktop_background({
+                                url: file_data.read_url,
+                                fit: 'cover'
+                            });
+
+                            // Save to backend
+                            $.ajax({
+                                url: window.api_origin + "/set-desktop-bg",
+                                type: 'POST',
+                                data: JSON.stringify({
+                                    url: window.desktop_bg_url,
+                                    color: window.desktop_bg_color,
+                                    fit: window.desktop_bg_fit,
+                                }),
+                                async: true,
+                                contentType: "application/json",
+                                headers: {
+                                    "Authorization": "Bearer " + window.auth_token
+                                },
+                                statusCode: {
+                                    401: function () { window.logout(); }
+                                },
+                            });
+                        } catch (error) {
+                            console.error('Failed to set desktop background:', error);
+                            UIAlert({
+                                message: 'Failed to set desktop background. Please try again.',
+                            });
+                        }
+                    }
+                });
             }
 
             // -------------------------------------------
