@@ -7,22 +7,23 @@
  * it under the terms of the GNU Affero General Public License as published
  * by the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import UIPrompt from '../UI/UIPrompt.js';
 
 /**
  * Returns a context menu item to create a new folder and a variety of file types.
- * 
+ *
  * @param {string} dirname - The directory path to create the item in
- * @param {HTMLElement} append_to_element - Element to append the new item to 
+ * @param {HTMLElement} append_to_element - Element to append the new item to
  * @returns {Object} The context menu item object
  */
 
@@ -68,6 +69,26 @@ const new_context_menu_item = function(dirname, append_to_element){
                 canvas.toBlob((blob) => {
                     window.create_file({dirname: dirname, append_to_element: append_to_element, name: 'New Image.jpg', content: blob});
                 });
+            }
+        },
+        // Web Link
+        {
+            html: i18n('web_link'),
+            icon: `<img src="${html_encode(window.icons['link.svg'])}" class="ctx-item-icon">`,
+            onClick: async function() {
+                const url = await UIPrompt({
+                    message: i18n('enter_url'),
+                    placeholder: 'https://example.com',
+                    value: ''
+                });
+
+                if (url && url !== false) {
+                    window.create_web_link({
+                        dirname: dirname,
+                        append_to_element: append_to_element,
+                        url: url
+                    });
+                }
             }
         },
     ];

@@ -943,6 +943,69 @@ window.create_shortcut = async(filename, is_dir, basedir, appendto_element, shor
     }
 }
 
+window.create_web_link = async(options)=>{
+    // args
+    let dirname = options.dirname;
+    let appendto_element = options.append_to_element;
+    let url = options.url;
+    let filename = options.name;
+
+    // Validate URL
+    if (!url || typeof url !== 'string') {
+        UIAlert('Invalid URL. Please provide a valid URL.');
+        return;
+    }
+
+    // Ensure URL starts with http:// or https://
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        UIAlert('Invalid URL. URL must start with http:// or https://');
+        return;
+    }
+
+    // If no filename provided, derive from URL
+    if (!filename) {
+        try {
+            const urlObj = new URL(url);
+            // Get domain without www
+            let domain = urlObj.hostname.replace(/^www\./, '');
+            filename = domain + '.weblink';
+        } catch (e) {
+            filename = 'New Link.weblink';
+        }
+    }
+
+    // Ensure .weblink extension
+    if (!filename.endsWith('.weblink')) {
+        filename += '.weblink';
+    }
+
+    // Store URL in JSON format for easy parsing
+    const linkData = JSON.stringify({ url: url });
+
+    // create file
+    try{
+        puter.fs.upload(new File([linkData], filename), dirname,
+        {
+            dedupeName: true,
+            success: async function (data){
+                const created_file = $(appendto_element).find('.item[data-path="'+html_encode(dirname)+'/'+html_encode(data.name)+'"]');
+                if(created_file.length > 0){
+                    window.activate_item_name_editor(created_file);
+
+                    // Add action to actions_history for undo ability
+                    window.actions_history.push({
+                        operation: 'create_file',
+                        data: created_file
+                    });
+                }
+            }
+        });
+    }catch(err){
+        console.log(err);
+        UIAlert('Failed to create web link. Please try again.');
+    }
+}
+
 window.copy_clipboard_items = async function(dest_path, dest_container_element){
     let copy_op_id = window.operation_id++;
     window.operation_cancelled[copy_op_id] = false;

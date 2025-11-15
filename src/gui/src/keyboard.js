@@ -733,23 +733,59 @@ $(document).bind("keyup keydown", async function(e){
     if((e.ctrlKey || e.metaKey) && e.which === 86 && !$(focused_el).is('input') && !$(focused_el).is('textarea')){
         let target_path, target_el;
 
-        // continue only if there is something in the clipboard
-        if(window.clipboard.length === 0)
-            return;
-
         let parent_container = determine_active_container_parent();
 
         if(parent_container){
             target_el = parent_container;
             target_path = $(parent_container).attr('data-path');
-            // don't allow pasting in Trash
-            if((target_path === window.trash_path || target_path.startsWith(window.trash_path + '/')) && window.clipboard_op !== 'move')
-                return;
-            // execute clipboard operation
-            if(window.clipboard_op === 'copy')
-                window.copy_clipboard_items(target_path);
-            else if(window.clipboard_op === 'move')
-                window.move_clipboard_items(target_el, target_path);
+
+            // Try to read text from clipboard to check if it's a URL
+            navigator.clipboard.readText().then(clipboardText => {
+                // Check if clipboard contains a URL
+                const urlPattern = /^https?:\/\/.+/i;
+                if (clipboardText && urlPattern.test(clipboardText.trim())) {
+                    // If puter clipboard is empty, create a web link from the URL
+                    if(window.clipboard.length === 0) {
+                        const url = clipboardText.trim();
+                        window.create_web_link({
+                            dirname: target_path,
+                            append_to_element: target_el,
+                            url: url
+                        });
+                        return;
+                    }
+                }
+
+                // Otherwise, continue with normal paste operation
+                // continue only if there is something in the clipboard
+                if(window.clipboard.length === 0)
+                    return;
+
+                // don't allow pasting in Trash
+                if((target_path === window.trash_path || target_path.startsWith(window.trash_path + '/')) && window.clipboard_op !== 'move')
+                    return;
+                // execute clipboard operation
+                if(window.clipboard_op === 'copy')
+                    window.copy_clipboard_items(target_path);
+                else if(window.clipboard_op === 'move')
+                    window.move_clipboard_items(target_el, target_path);
+            }).catch(err => {
+                // If clipboard API fails, fallback to normal paste
+                console.log('Clipboard read failed, using normal paste:', err);
+
+                // continue only if there is something in the clipboard
+                if(window.clipboard.length === 0)
+                    return;
+
+                // don't allow pasting in Trash
+                if((target_path === window.trash_path || target_path.startsWith(window.trash_path + '/')) && window.clipboard_op !== 'move')
+                    return;
+                // execute clipboard operation
+                if(window.clipboard_op === 'copy')
+                    window.copy_clipboard_items(target_path);
+                else if(window.clipboard_op === 'move')
+                    window.move_clipboard_items(target_el, target_path);
+            });
         }
         return false;
     }
