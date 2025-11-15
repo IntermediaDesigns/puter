@@ -130,6 +130,47 @@ const open_item = async function(options){
         }
     }
     //----------------------------------------------------------------
+    // Is this a .weblink file? Open URL in new tab
+    //----------------------------------------------------------------
+    else if(!is_dir && item_path.toLowerCase().endsWith('.weblink')){
+        try {
+            // Read the .weblink file to get the URL
+            const linkContentRaw = await puter.fs.read(item_path);
+
+            // Convert to text if it's a Blob or ArrayBuffer
+            let linkContent;
+            if (linkContentRaw instanceof Blob) {
+                linkContent = await linkContentRaw.text();
+            } else if (linkContentRaw instanceof ArrayBuffer) {
+                linkContent = new TextDecoder().decode(linkContentRaw);
+            } else {
+                linkContent = linkContentRaw;
+            }
+
+            let url;
+
+            try {
+                // Try to parse as JSON first
+                const linkData = JSON.parse(linkContent);
+                url = linkData.url;
+            } catch (e) {
+                // If not JSON, treat the content as plain URL
+                url = linkContent.trim();
+            }
+
+            // Validate URL
+            if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+                // Open URL in new tab with security attributes
+                window.open(url, '_blank', 'noopener,noreferrer');
+            } else {
+                UIAlert('Invalid URL in web link file.');
+            }
+        } catch (err) {
+            console.error('Error opening web link:', err);
+            UIAlert('Failed to open web link. The file may be corrupted.');
+        }
+    }
+    //----------------------------------------------------------------
     // Does the user have a preference for this file type?
     //----------------------------------------------------------------
     else if(!associated_app_name && !is_dir && window.user_preferences[`default_apps${path.extname(item_path).toLowerCase()}`]) {
