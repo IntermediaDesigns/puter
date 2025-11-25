@@ -120,6 +120,7 @@ async function UIWindow(options) {
     options.window_class = (options.window_class !== undefined ? ' ' + options.window_class : '');
 
     options.is_visible = options.is_visible ?? true;
+    options.stay_in_background = options.stay_in_background ?? false;
 
     // if only one instance is allowed, bring focus to the window that is already open
     if(options.single_instance && options.app !== ''){
@@ -188,11 +189,11 @@ async function UIWindow(options) {
         if(user_set_url_params.length > 0)
             user_set_url_params = '?'+ user_set_url_params.join('&');
     }
-    h += `<div class="window window-active 
+    h += `<div class="window ${options.stay_in_background ? '' : 'window-active'}
                         ${options.app === 'explorer' ? 'window-explorer' : ''}
                         ${options.cover_page ? 'window-cover-page' : ''}
-                        ${options.uid !== undefined ? 'window-'+options.uid : ''} 
-                        ${options.window_class} 
+                        ${options.uid !== undefined ? 'window-'+options.uid : ''}
+                        ${options.window_class}
                         ${options.allow_user_select ? ' allow-user-select' : ''}
                         ${options.is_openFileDialog || options.is_saveFileDialog || options.is_directoryPicker ? 'window-filedialog' : ''}" 
                 id="window-${win_id}" 
@@ -347,11 +348,13 @@ async function UIWindow(options) {
                 // <iframe>
                 // Important: we don't allow allow-same-origin when iframe_srcdoc is used because this would allow the iframe to access the parent window's DOM, localStorage, etc.
                 // this is a security risk and must be avoided.
+                // When stay_in_background is set, disable pointer-events to prevent focus stealing
                 h += `<iframe tabindex="-1"
                         data-app="${html_encode(options.app)}"
-                        class="window-app-iframe" 
-                        frameborder="0" 
-                        ${options.iframe_url ? 'src="'+ html_encode(options.iframe_url)+'"' : ''}
+                        class="window-app-iframe"
+                        style="${options.stay_in_background ? 'pointer-events: none;' : ''}"
+                        frameborder="0"
+                        ${(options.iframe_url && !options.stay_in_background) ? 'src="'+ html_encode(options.iframe_url)+'"' : ''}
                         ${options.iframe_srcdoc ? 'srcdoc="'+ html_encode(options.iframe_srcdoc) +'"' : ''}
                         ${(window.co_isolation_enabled && options.iframe_credentialless !== false)
                             ? 'credentialless '
@@ -359,9 +362,9 @@ async function UIWindow(options) {
                         }
                         allow = "${allow_str}"
                         allowtransparency="true"
-                        allowpaymentrequest="true" 
+                        allowpaymentrequest="true"
                         allowfullscreen="true"
-                        webkitallowfullscreen="webkitallowfullscreen" 
+                        webkitallowfullscreen="webkitallowfullscreen"
                         mozallowfullscreen="mozallowfullscreen"
                         sandbox="allow-forms allow-modals allow-pointer-lock allow-popups allow-popups-to-escape-sandbox ${options.iframe_srcdoc ? '' : 'allow-same-origin'} allow-scripts allow-top-navigation-by-user-activation allow-downloads allow-presentation allow-storage-access-by-user-activation"></iframe>`;
             }
@@ -579,7 +582,8 @@ async function UIWindow(options) {
         $(el_window_head_icon).attr('src', window.icons['shared.svg']);
     }
     // focus on this window and deactivate other windows
-    if ( options.is_visible ) {
+    // skip focus if stay_in_background is set (e.g., apps launched from terminal)
+    if ( options.is_visible && !options.stay_in_background ) {
         $(el_window).focusWindow();
     }
 
@@ -1208,9 +1212,21 @@ async function UIWindow(options) {
 
     // set iframe url
     if (options.iframe_url){
-        $(el_window_app_iframe).attr('src', options.iframe_url)
-        //bring focus to iframe
-        el_window_app_iframe.contentWindow.focus();
+        // For background apps, set src after a delay to prevent focus stealing during load
+        if (options.stay_in_background) {
+            // Store the URL to set later
+            $(el_window_app_iframe).attr('data-src', options.iframe_url);
+            // Set src after a short delay, allowing parent to retain focus
+            setTimeout(() => {
+                const src = $(el_window_app_iframe).attr('data-src');
+                if (src) {
+                    $(el_window_app_iframe).attr('src', src);
+                }
+            }, 100);
+        } else {
+            $(el_window_app_iframe).attr('src', options.iframe_url);
+            el_window_app_iframe.contentWindow.focus();
+        }
     }
     // set the position of window
     if(!options.is_maximized){

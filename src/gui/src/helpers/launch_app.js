@@ -351,6 +351,7 @@ const launch_app = async (options)=>{
             is_resizable: window_resizable,
             has_head: ! hide_titlebar,
             show_in_taskbar: app_info.background ? false : window_options?.show_in_taskbar,
+            stay_in_background: options.launched_by_exec_service ?? false,
         });
 
         // If the app is not in the background, show the window
